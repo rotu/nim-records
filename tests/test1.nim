@@ -48,11 +48,25 @@ macro dumpTypeImpl(x: typed): untyped =
   newLit(x.getTypeImpl.lispRepr)
 
 
+test "tuplecat1":
+  check concat(()) == ()
+  check concat((),()) == ()
+  let empty = ()
+  const otherempty = ()
+  check concat(empty, otherempty) == ()
+
+  let nums1 = (1,"b",3)
+  echo "concatting"
+  echo concat(nums1, nums1, nums1) #== (1,2,3,1,2,3,1,2,3))
+
+
+
 test "tuplecat":
   let c =  concat( (1, 2) , (3, "a") )
   echo (c[3] & "foo")
   let d = (a:1,b:2)
   let d2 = (c:3,d:5)
+
   # for f,g in fieldPairs(d):
   #   echo f," ="
   # echo dumpTypeInst(d)

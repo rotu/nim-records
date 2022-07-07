@@ -26,11 +26,11 @@ macro call*(fn:typed, args:tuple, kwargs:tuple=()): untyped =
     eqExpr.add(kwarg[0], newDotExpr(kwargs, kwarg[1]))
     result.add(eqExpr)
 
-macro concat*(args: varargs[typed]): tuple =
+macro concat*(args: varargs[typed]): untyped =
   result = newNimNode(nnkTupleConstr)
-  for atuple in args:
-    for x in atuple:
-      result.add(x)
+  for arg in args:
+    for i in 0..<len(arg.getTypeImpl):
+      result.add(newNimNode(nnkBracketExpr).add(arg, newIntLitNode(i)))
 
 macro merge*(args: varargs[typed]): tuple =
   result = newNimNode(nnkTupleConstr)
