@@ -8,7 +8,7 @@
 import unittest
 import sugar
 
-import linear
+import tupleops
 
 
 
