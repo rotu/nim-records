@@ -4,6 +4,8 @@ import std/tables
 import std/algorithm
 import macros
 
+type TupleKeys = static[seq[string]]
+
 macro concat*(t1: tuple, t2: tuple): untyped =
   let fields = collect:
     for arg in [t1, t2]:
@@ -27,18 +29,15 @@ macro concat*(t1: tuple, t2: tuple): untyped =
 proc `&` *(t1: tuple, t2: tuple): auto =
   concat(t1, t2)
 
+proc tupleKeys*(T: typedesc[tuple]): TupleKeys =
+  for c in getTypeImpl(T).children:
+    expectKind(c, nnkIdentDefs)
+    result.add(c[0].repr)
 
-proc tupleKeys*[T: tuple](): seq[string] =
-  result = static:
-    collect:
-      for c in getTypeImpl(T).children:
-        expectKind(c, nnkIdentDefs)
-        c[0].repr
+template tupleKeys*(t: tuple): TupleKeys =
+  tupleKeys(typeof(t))
 
-proc tupleKeys*(t: tuple): seq[string] =
-  tupleKeys[typeof(t)]()
-
-proc getFieldNames*[T: tuple](): seq[string] =
+proc getFieldNames*[T: tuple](): TupleKeys =
   macro getFieldNamesImpl(): seq[string] =
     newLit:
       collect:
@@ -46,7 +45,7 @@ proc getFieldNames*[T: tuple](): seq[string] =
           f[0].repr()
   getFieldNamesImpl()
 
-proc proj*[T: tuple](t: T, tags: static[seq[string]]): tuple =
+proc proj*[T: tuple](t: T, tags: TupleKeys): tuple =
   ## Rearrange/select named fields from a named tuple,
   ## returning a new named tuple
   macro projImpl(): tuple =

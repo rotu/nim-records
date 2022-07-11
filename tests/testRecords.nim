@@ -1,6 +1,7 @@
 import unittest
 import sugar
 import records
+import std/options
 
 test "canmakerecord":
   let mytuple = (x: 1, y: 2)
@@ -12,6 +13,7 @@ test "keyset":
   let x = toRecord((a: 1, b: 2))
   let y = toRecord((b: 1, a: 6))
   check keyset(x) == keyset(y)
+  check x == x.proj(keyset(x))
 
 test "union order varies":
   let x = (a: 1).toRecord
@@ -20,3 +22,7 @@ test "union order varies":
 
   check(x.merge(y).merge(z) == z.merge(x).merge(y))
   check (x & y == y & x)
+
+test "join":
+  let x = (a: 1, b: 2).toRecord
+  check join(x, x) == some(x)
