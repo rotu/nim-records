@@ -14,44 +14,44 @@ type KeySet = HashSet[string]
 # proc union *(s1:KeySet, s2:KeySet):KeySet =
 #   union(toHashSet(s1), toHashSet(s2)).toSeq
 
-type Record[T:tuple] = object
+type Record[T: tuple] = object
   data: T
 
-proc toRecord*[T:tuple](x:T): auto = 
+proc toRecord*[T: tuple](x: T): auto =
   let sorted = sortFields(x)
   Record[typeof(sorted)](data: sorted)
 
-proc toTuple*[T:tuple](x:Record[T]): T =
+proc toTuple*[T: tuple](x: Record[T]): T =
   x.data
 
-proc `==`*[T1,T2](t1:Record[T1], t2:Record[T2]): bool =
-  for x1,x2 in fields(t1.data,t2.data):
+proc `==`*[T1, T2](t1: Record[T1], t2: Record[T2]): bool =
+  for x1, x2 in fields(t1.data, t2.data):
     if x1 != x2:
-        return false
+      return false
   true
 
 proc keyset*[T](): KeySet =
   tupleKeys[T]().toHashSet
 
-proc keyset*[T](t:Record[T]): KeySet = 
+proc keyset*[T](t: Record[T]): KeySet =
   keyset[T]()
 
-proc `[]`*[T](r:Record[T], key:static string): auto =
+proc `[]`*[T](r: Record[T], key: static string): auto =
   get[T](r, key)
 
-proc get *[T](r:Record[T], key:static string): auto =
+proc get *[T](r: Record[T], key: static string): auto =
   r.data[key]
 
-proc merge *[T1,T2](r1:Record[T1], r2:Record[T2]): auto =
+proc merge *[T1, T2](r1: Record[T1], r2: Record[T2]): auto =
   toRecord(concat(r1.data, r2.data))
 
-proc `&` *[T1,T2](r1:Record[T1], r2:Record[T2]): auto =
+proc `&` *[T1, T2](r1: Record[T1], r2: Record[T2]): auto =
   merge(r1, r2)
 
-proc proj*[T](r:Record[T], keys:static KeySet): auto =
+proc proj*[T](r: Record[T], keys: static KeySet): auto =
   toRecord(toTuple(r).project(keys.toSeq()))
 
-# proc macroSchemaFromTupleTypeImpl(ttype: NimNode):Table[string, NimNode] = 
+# proc macroSchemaFromTupleTypeImpl(ttype: NimNode):Table[string, NimNode] =
 #   expectKind(ttype, nnkTupleTy)
 #   for f in ttype.children:
 #     expectKind(f, nnkIdentDefs)
@@ -85,7 +85,7 @@ proc proj*[T](r:Record[T], keys:static KeySet): auto =
 # macro dumpType(x: typed): untyped =
 #   newLit(x.getType.lispRepr)
 
-# macro dumpSameType(x:typed, y:typed):untyped = 
+# macro dumpSameType(x:typed, y:typed):untyped =
 #   newLit(sameType(x,y))
 
 # type Foo = object

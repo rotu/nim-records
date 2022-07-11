@@ -4,9 +4,9 @@ import std/tables
 import std/algorithm
 import macros
 
-macro concat*(t1:tuple,t2:tuple): untyped =
+macro concat*(t1: tuple, t2: tuple): untyped =
   let fields = collect:
-    for arg in [t1,t2]:
+    for arg in [t1, t2]:
       expectKind(arg.getTypeImpl(), {nnkTupleConstr, nnkTupleTy})
       for i, d in pairs(arg.getTypeImpl):
         case kind(d):
@@ -20,25 +20,25 @@ macro concat*(t1:tuple,t2:tuple): untyped =
               newTree(nnkDotExpr, arg, prop)
             )
           else:
-            error("Unexpected field kind: `" & $kind(d) & "`")     
+            error("Unexpected field kind: `" & $kind(d) & "`")
             newEmptyNode()
   newTree(nnkTupleConstr, fields)
 
-proc `&` *(t1:tuple, t2:tuple):auto = 
+proc `&` *(t1: tuple, t2: tuple): auto =
   concat(t1, t2)
 
 
-proc tupleKeys*[T:tuple](): seq[string] =
+proc tupleKeys*[T: tuple](): seq[string] =
   result = static:
     collect:
       for c in getTypeImpl(T).children:
         expectKind(c, nnkIdentDefs)
         c[0].repr
-    
-proc tupleKeys*(t:tuple): seq[string] =
-  tupleKeys[typeof(t)]()  
 
-proc getFieldNames*[T:tuple](): seq[string] =
+proc tupleKeys*(t: tuple): seq[string] =
+  tupleKeys[typeof(t)]()
+
+proc getFieldNames*[T: tuple](): seq[string] =
   macro getFieldNamesImpl(): seq[string] =
     newLit:
       collect:
@@ -46,7 +46,7 @@ proc getFieldNames*[T:tuple](): seq[string] =
           f[0].repr()
   getFieldNamesImpl()
 
-proc proj*[T:tuple](t:T, tags:static[seq[string]]): tuple =
+proc proj*[T: tuple](t: T, tags: static[seq[string]]): tuple =
   ## Rearrange/select named fields from a named tuple,
   ## returning a new named tuple
   macro projImpl(): tuple =
@@ -58,7 +58,7 @@ proc proj*[T:tuple](t:T, tags:static[seq[string]]): tuple =
       ))
   projImpl()
 
-proc proj*[T:tuple](t:T, ixes:static[seq[Ordinal]]) =
+proc proj*[T: tuple](t: T, ixes: static[seq[Ordinal]]) =
   ## Rearrange/select named fields from a positional tuple,
   ## returning a new positional tuple
   macro projImpl(): tuple =
@@ -68,25 +68,25 @@ proc proj*[T:tuple](t:T, ixes:static[seq[Ordinal]]) =
   projImpl()
 
 # order fields alphabetically
-proc sortFields*[T:tuple](arg: T):tuple = 
-  const  fields = sorted(getFieldNames[T]())
+proc sortFields*[T: tuple](arg: T): tuple =
+  const fields = sorted(getFieldNames[T]())
   proj(arg, fields)
 
-converter reshuffle*[T1:tuple, T2:tuple](x: T1): T2 =
+converter reshuffle*[T1: tuple, T2: tuple](x: T1): T2 =
   for name, v1, v2 in fieldPairs(x, result):
     v2 = v1
 
 macro assignFromImpl(dest: var object|tuple; src: tuple): untyped =
   var res = newNimNode(nnkStmtList)
   for n in src.getTypeImpl:
-    expectKind(n,nnkIdentDefs)
-    res.add(newAssignment(newDotExpr(dest,n[0]), newDotExpr(src,n[0])))
+    expectKind(n, nnkIdentDefs)
+    res.add(newAssignment(newDotExpr(dest, n[0]), newDotExpr(src, n[0])))
   res
 
 proc `<~` *(dest: var (tuple | object); src: tuple) =
   assignFromImpl(dest, src)
 
-proc `=~` *(dest:var(tuple); src:tuple) =
+proc `=~` *(dest: var(tuple); src: tuple) =
   static:
     assert sorted(tupleKeys(dest)) == sorted(tupleKeys(src))
   dest <~ src
