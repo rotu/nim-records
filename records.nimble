@@ -2,7 +2,7 @@
 
 version = "0.1.0"
 author = "dan"
-description = "Dan's magic linear algebra library"
+description = "Dan's magic records library"
 license = "MIT"
 srcDir = "src"
 

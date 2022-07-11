@@ -1,63 +1,52 @@
-
-import std/sequtils
-import std/sugar
 import std/tables
 import macros
 import std/sets
-import tupleops
+import records/tupleops
 import std/typetraits
-type RecordSchema * = Table[string, typedesc]
 
-# default values
-type
-  Foo = enum
-    x=0
-    y="foo"
-    w=2
-    z
+type KeySet = HashSet[string]
 
-# https://nim-lang.org/docs/enumutils.html
-const h:Foo = Foo.x
+# proc intersection *(s1:KeySet, s2:KeySet):KeySet =
+#   var s = intersection(toHashSet(s1), toHashSet(s2)).toSeq
+#   s.sort
+#   KeySet(s)
 
-#[
-    the schema for a record should be either:
-        table key -> type
-        function enum -> type
-        ???
+# proc union *(s1:KeySet, s2:KeySet):KeySet =
+#   union(toHashSet(s1), toHashSet(s2)).toSeq
 
-
-]#
-
-type Record[T] = object
+type Record[T:tuple] = object
   data: T
 
-proc `[]`[T](r:Record[T], key:static string): auto =
+proc toRecord*[T:tuple](x:T): auto = 
+  let sorted = sortFields(x)
+  Record[typeof(sorted)](data: sorted)
+
+proc toTuple*[T:tuple](x:Record[T]): T =
+  x.data
+
+proc `==`*[T1,T2](t1:Record[T1], t2:Record[T2]): bool =
+  for x1,x2 in fields(t1.data,t2.data):
+    if x1 != x2:
+        return false
+  true
+
+proc keyset*[T](): KeySet =
+  tupleKeys[T]().toHashSet
+
+proc keyset*[T](t:Record[T]): KeySet = 
+  keyset[T]()
+
+proc `[]`*[T](r:Record[T], key:static string): auto =
+  get[T](r, key)
+
+proc get *[T](r:Record[T], key:static string): auto =
   r.data[key]
 
-proc get[T](r:Record[T], key:static string): auto =
-  r.data[key]
+proc merge *[T1,T2](r1:Record[T1], r2:Record[T2]): auto =
+  toRecord(concat(r1.data, r2.data))
 
-proc dataOf[T](r:Record[T]): T = 
-  r.data
-
-proc merge *[T1,T2](r1:Record[T1],r2:Record[T2]): auto = 
-  Record(merge(r1.data,r2.data))
-
-proc toRecord*(x:tuple): auto = 
-  Record[typeof(x)](data: x)
-
-proc tupleKeysToIndices[T:tuple](): Table[string, int] = 
-  static: assert isNamedTuple(T), "Must be a named tuple"
-  for (i, k) in getTypeImpl(T).pairs:
-    result[k[0].repr] = i
-
-proc tupleKeys[T:tuple](): HashSet[string] =
-  for k in tupleKeysToIndices[T]().keys:
-    result.incl(k)
-
-proc fromSym(n:NimNode):string = 
-  expectKind(n,nnkSym)
-  n.repr
+proc proj*[T](r:Record[T], keys:static KeySet): auto =
+  toRecord(toTuple(r).project(keys.toSeq()))
 
 # proc macroSchemaFromTupleTypeImpl(ttype: NimNode):Table[string, NimNode] = 
 #   expectKind(ttype, nnkTupleTy)
@@ -67,77 +56,6 @@ proc fromSym(n:NimNode):string =
 #     fields[fromSym(f[0])] = f[1]
 #   newLit(fields)
 
-
-macro recordSchemaFromNamedTuple(t: typed): Table[string, NimNode] =
-  var fields: Table[string, NimNode]
-  let ttype = t.getTypeImpl
-  expectKind(ttype, nnkTupleTy)
-  for f in ttype.children:
-    expectKind(f, nnkIdentDefs)
-    # must be a named tuple!
-    fields[fromSym(f[0])] = f[1]
-  newLit(fields)
-
-# macro recordSchemaFromNamedTuple(t:typedesc): Table[string,NimNode] =
-#   var fields: Table[string,NimNode]
-#   for f in getTypeImpl(t).children:
-#     fields[f[0].repr] = f[1]
-#   newLit(fields)
-
-#   static: assert isNamedTuple(T2), "Must be a named tuple"
-# proc tupleKeysCompatible[T1, T2:tuple](): bool = 
-#   static: assert isNamedTuple(T1), "Must be a named tuple"
-#   static: assert isNamedTuple(T2), "Must be a named tuple"
-#   if tupleKeys[T1]() != tupleKeys[T2]():
-#     return false
-
-#   const d1 = tupleKeysToIndices[T1]()
-#   const d2 = tupleKeysToIndices[T2]()
-#   for (k, i1) in d1.pairs:
-#     let i2 = d2[k]
-#     if not ( typeof(T1[i1]) is typeof(T2[i2])):
-#       return false
-#   true
-
-
-proc keys*[T](r:Record[T]): HashSet[string] = 
-  tupleKeys(r.data)
-
-# macro tupleKeys(x:tuple): untyped =
-#   var r: HashSet[string]
-#   for k in getTypeImpl(x).children():
-#     r.incl(k[0].repr)
-#   newLit(r)
-
-macro sameTypeAndValue(x:typed, y:typed):bool =
-  if not sameType(x,y):
-    return newLit(false)
-  return newCall("==",x,y)
-
-proc sameShape *[T1,T2](t1:Record[T1], t2:Record[T2]):bool =
-  let d = t1.data
-  let d2 = t2.data
-  let s1 = recordSchemaFromNamedTuple(d)
-  let s2 = recordSchemaFromNamedTuple(d2)
-  var k1:HashSet
-  var k2:HashSet
-  for k in s1.keys:
-    k1.incl(k)
-  for k in s2.keys:
-    k2.incl(k)
-  if k1 != k2:
-    return false
-  for k in k1:
-    if not sameType(k1[k],k2[k]):
-      return false
-  true
-
-proc `==`*[T1,T2](t1:Record[T1], t2:Record[T2]): bool =
-  for x1,x2 in fields(t1.data,t2.data):
-    if x1 != x2:
-        return false
-
-  true
 
 # type
 #   Node[kind:static NimNodeKind] = distinct NimNode
