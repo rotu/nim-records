@@ -4,10 +4,10 @@ import std/tables
 import std/algorithm
 import macros
 
-macro concat*(args: varargs[typed]): untyped =
+macro concat*(t1:tuple,t2:tuple): untyped =
   let fields = collect:
-    for arg in args:
-      expectKind(arg.getTypeImpl(), {nnkTupleConstr,nnkTupleTy})
+    for arg in [t1,t2]:
+      expectKind(arg.getTypeImpl(), {nnkTupleConstr, nnkTupleTy})
       for i, d in pairs(arg.getTypeImpl):
         case kind(d):
           of nnkSym:
@@ -23,6 +23,10 @@ macro concat*(args: varargs[typed]): untyped =
             error("Unexpected field kind: `" & $kind(d) & "`")     
             newEmptyNode()
   newTree(nnkTupleConstr, fields)
+
+proc `&` *(t1:tuple, t2:tuple):auto = 
+  concat(t1, t2)
+
 
 proc tupleKeys*[T:tuple](): seq[string] =
   result = static:

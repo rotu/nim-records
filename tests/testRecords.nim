@@ -19,3 +19,4 @@ test "union order varies":
   let z = (c:3).toRecord
   
   check(x.merge(y).merge(z) == z.merge(x).merge(y))
+  check ( x & y == y & x)

@@ -32,7 +32,6 @@ test "assignfrom":
   dest <~ src
 
 test "tuplecat1":
-  check concat(()) == ()
   check concat((),()) == ()
 
   type Person = tuple[nam: string, age: int]
@@ -51,7 +50,7 @@ test "tuplecat1":
 
   let nums1 = (1,"b",3)
   echo "concatting"
-  echo concat(nums1, nums1, nums1) #== (1,2,3,1,2,3,1,2,3))
+  check concat(nums1, nums1) == (1,"b",3,1,"b",3)
 
 
 # test "tuplecat":

@@ -45,6 +45,9 @@ proc get *[T](r:Record[T], key:static string): auto =
 proc merge *[T1,T2](r1:Record[T1], r2:Record[T2]): auto =
   toRecord(concat(r1.data, r2.data))
 
+proc `&` *[T1,T2](r1:Record[T1], r2:Record[T2]): auto =
+  merge(r1, r2)
+
 proc proj*[T](r:Record[T], keys:static KeySet): auto =
   toRecord(toTuple(r).project(keys.toSeq()))
 
