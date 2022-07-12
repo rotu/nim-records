@@ -71,20 +71,19 @@ proc sortFields*[T: tuple](arg: T): tuple =
   const fields = sorted(getFieldNames[T]())
   proj(arg, fields)
 
-proc reshuffle*[T1: tuple, T2: tuple](x: T1): T2 =
-  for name, v1, v2 in fieldPairs(x, result):
-    v2 = v1
 
-proc `<~` *(dest: var (tuple | object); src: tuple) =
-  macro assignFromImpl(dest: var object|tuple; src: tuple): untyped =
+proc `<~` *[T1: tuple|object, T2: tuple](dest: var T1; src: T2) =
+  macro assignFromImpl(): untyped =
     var res = newNimNode(nnkStmtList)
-    for n in src.getTypeImpl:
+    for n in getTypeImpl(T2).children:
       expectKind(n, nnkIdentDefs)
-      res.add(newAssignment(newDotExpr(dest, n[0]), newDotExpr(src, n[0])))
+      let prop = n[0]
+      res.add(newAssignment(newDotExpr(bindSym "dest", prop), newDotExpr(
+          bindSym "src", prop)))
     res
-  assignFromImpl(dest, src)
+  assignFromImpl()
 
-proc `=~` *(dest: var(tuple); src: tuple) =
+proc `=~` *[T1: tuple, T2: tuple](dest: var T1; src: T2) =
   static:
-    assert sorted(tupleKeys(dest)) == sorted(tupleKeys(src))
+    assert sorted(tupleKeys(T1)) == sorted(tupleKeys(T2))
   dest <~ src
