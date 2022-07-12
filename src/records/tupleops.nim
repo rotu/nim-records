@@ -1,10 +1,9 @@
-
 import std/sugar
 import std/tables
 import std/algorithm
 import macros
 
-type TupleKeys = static[seq[string]]
+type TupleKeys * = static[seq[string]]
 
 macro concat*(t1: tuple, t2: tuple): untyped =
   let fields = collect:
@@ -71,18 +70,17 @@ proc sortFields*[T: tuple](arg: T): tuple =
   const fields = sorted(getFieldNames[T]())
   proj(arg, fields)
 
-converter reshuffle*[T1: tuple, T2: tuple](x: T1): T2 =
+proc reshuffle*[T1: tuple, T2: tuple](x: T1): T2 =
   for name, v1, v2 in fieldPairs(x, result):
     v2 = v1
 
-macro assignFromImpl(dest: var object|tuple; src: tuple): untyped =
-  var res = newNimNode(nnkStmtList)
-  for n in src.getTypeImpl:
-    expectKind(n, nnkIdentDefs)
-    res.add(newAssignment(newDotExpr(dest, n[0]), newDotExpr(src, n[0])))
-  res
-
 proc `<~` *(dest: var (tuple | object); src: tuple) =
+  macro assignFromImpl(dest: var object|tuple; src: tuple): untyped =
+    var res = newNimNode(nnkStmtList)
+    for n in src.getTypeImpl:
+      expectKind(n, nnkIdentDefs)
+      res.add(newAssignment(newDotExpr(dest, n[0]), newDotExpr(src, n[0])))
+    res
   assignFromImpl(dest, src)
 
 proc `=~` *(dest: var(tuple); src: tuple) =

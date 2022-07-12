@@ -9,11 +9,19 @@ test "canmakerecord":
   check p == p
   # check callAll(f) == n
 
-test "keyset":
+test "get":
+    let x = toRecord((a: 1, b: "B"))
+    check get(x,"a") == 1
+    check x["a"] == 1
+    check get(x,"b") == "B"
+    check x["b"] == "B"
+
+
+test "keys":
   let x = toRecord((a: 1, b: 2))
   let y = toRecord((b: 1, a: 6))
-  check keyset(x) == keyset(y)
-  check x == x.proj(keyset(x))
+  check keys(x) == keys(y)
+  check x == x.proj(keys(x))
 
 test "union order varies":
   let x = (a: 1).toRecord

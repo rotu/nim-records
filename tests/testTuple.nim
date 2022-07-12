@@ -3,7 +3,6 @@ import sugar
 
 import records/tupleops
 import std/typetraits
-import std/sequtils
 import macros
 
 # test "call":
@@ -69,7 +68,6 @@ test "tuplecat1":
 #     echo k,":=",v
 #   # echo merge(r, (c:5,d:1))
 #   call(echo,(1,2,3))
-
 
 test "test sort":
   let z = (x: 1)
