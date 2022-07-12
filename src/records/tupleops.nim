@@ -3,30 +3,31 @@ import std/tables
 import std/algorithm
 import macros
 
-type TupleKeys * = static[seq[string]]
+type TupleKeys* = static[seq[string]]
 
-macro concat*(t1: tuple, t2: tuple): untyped =
-  let fields = collect:
-    for arg in [t1, t2]:
-      expectKind(arg.getTypeImpl(), {nnkTupleConstr, nnkTupleTy})
-      for i, d in pairs(arg.getTypeImpl):
-        case kind(d):
-          of nnkSym:
-            # un-named tuple field
-            newTree(nnkBracketExpr, arg, newLit(i))
-          of nnkIdentDefs:
-            # named tuple field
-            let prop = d[0]
-            newColonExpr(prop,
-              newTree(nnkDotExpr, arg, prop)
-            )
-          else:
-            error("Unexpected field kind: `" & $kind(d) & "`")
-            newEmptyNode()
-  newTree(nnkTupleConstr, fields)
+proc concat*(t1: tuple, t2: tuple): auto =
+  macro concatImpl(): untyped =
+    let fields = collect:
+      for arg in [bindSym("t1"), bindSym("t2")]:
+        expectKind(arg.getTypeImpl(), {nnkTupleConstr, nnkTupleTy})
+        for i, d in pairs(arg.getTypeImpl):
+          case kind(d):
+            of nnkSym:
+              # un-named tuple field
+              newTree(nnkBracketExpr, arg, newLit(i))
+            of nnkIdentDefs:
+              # named tuple field
+              let prop = d[0]
+              newColonExpr(prop,
+                newTree(nnkDotExpr, arg, prop)
+              )
+            else:
+              error("Unexpected field kind: `" & $kind(d) & "`")
+              newEmptyNode()
+    newTree(nnkTupleConstr, fields)
+  concatImpl()
 
-proc `&` *(t1: tuple, t2: tuple): auto =
-  concat(t1, t2)
+proc `&` *(t1: tuple, t2: tuple): auto = concat(t1, t2)
 
 proc tupleKeys*(T: typedesc[tuple]): TupleKeys =
   for c in getTypeImpl(T).children:

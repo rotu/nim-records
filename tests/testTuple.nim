@@ -50,6 +50,8 @@ test "tuplecat1":
   let nums1 = (1, "b", 3)
   echo "concatting"
   check concat(nums1, nums1) == (1, "b", 3, 1, "b", 3)
+  check (nums1 & nums1) == (1, "b", 3, 1, "b", 3)
+
 
 
 # test "tuplecat":
