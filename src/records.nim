@@ -79,3 +79,19 @@ proc proj*[T](table: openArray[Record[T]], keys: KeySet): auto =
    proc tf(r: Record[T]): auto =
       proj(r, keys)
    map(table, tf)
+
+proc groupBy*[T](tbl: openArray[Record[T]], keys: KeySet): auto =
+   const otherKeys = keys(Record[T]).difference(keys)
+   type K = typeof(block: (for row in tbl: proj(row, keys)))
+   type V = typeof(block: (for row in tbl: proj(row, otherKeys)))
+   type VV = seq[V]
+
+   var res: Table[K, VV]
+
+   for row in tbl:
+      let k = proj(row, keys)
+      let v = proj(row, otherKeys)
+      mgetOrPut[K, VV](res, k, @[]).add(v)
+
+   return res
+

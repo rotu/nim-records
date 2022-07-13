@@ -3,6 +3,7 @@ import sugar
 import records
 import std/options
 import std/sequtils
+import std/tables
 
 test "canmakerecord":
   let mytuple = (x: 1, y: 2)
@@ -58,3 +59,16 @@ test "proj":
     for i in -3..3:
       (x: i, y: (i*i)).toRecord
   let xs = proj(table, toKeySet(["x"]))
+
+test "groupby":
+  let table = [
+    (x: 1, y: 2).toRecord,
+    (x: 1, y: 3).toRecord,
+    (x: 2, y: 2).toRecord
+  ]
+  let grouped = groupBy(table, toKeySet(["x"]))
+  let k1 = (x: 1).toRecord
+  let k2 = (x: 2).toRecord
+  echo typeof(grouped)
+  check((grouped[k1]).len == 2)
+  check(grouped[k2].len == 1)
