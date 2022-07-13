@@ -70,20 +70,3 @@ proc proj*[T: tuple](t: T, ixes: static[seq[Ordinal]]) =
 proc sortFields*[T: tuple](arg: T): tuple =
   const fields = sorted(getFieldNames[T]())
   proj(arg, fields)
-
-
-proc `<~` *[T1: tuple|object, T2: tuple](dest: var T1; src: T2) =
-  macro assignFromImpl(): untyped =
-    var res = newNimNode(nnkStmtList)
-    for n in getTypeImpl(T2).children:
-      expectKind(n, nnkIdentDefs)
-      let prop = n[0]
-      res.add(newAssignment(newDotExpr(bindSym "dest", prop), newDotExpr(
-          bindSym "src", prop)))
-    res
-  assignFromImpl()
-
-proc `=~` *[T1: tuple, T2: tuple](dest: var T1; src: T2) =
-  static:
-    assert sorted(tupleKeys(T1)) == sorted(tupleKeys(T2))
-  dest <~ src

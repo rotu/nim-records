@@ -25,10 +25,6 @@ test "sortfields":
   check sortFields(x) == x
   check sortFields((x: 1, a: 2)) == (a: 2, x: 1)
 
-test "assignfrom":
-  var dest = (x: 1, y: 2)
-  var src = (x: 3)
-  dest <~ src
 
 test "tuplecat1":
   check concat((), ()) == ()

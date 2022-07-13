@@ -1,13 +1,31 @@
 import tupleops
 import macros
+import std/algorithm
 
+proc `<~` *[T1: tuple|object, T2: tuple](dest: var T1; src: T2) =
+  macro assignFromImpl(): untyped =
+    var res = newNimNode(nnkStmtList)
+    for n in getTypeImpl(T2).children:
+      expectKind(n, nnkIdentDefs)
+      let prop = n[0]
+      res.add(newAssignment(newDotExpr(bindSym "dest", prop), newDotExpr(
+          bindSym "src", prop)))
+    res
+  assignFromImpl()
 
-converter toTuple*[T2: tuple](t1: tuple): T2 =
-  result =~ t1
+proc `=~` *[T1: tuple, T2: tuple](dest: var T1; src: T2) =
+  static:
+    assert sorted(tupleKeys(T1)) == sorted(tupleKeys(T2))
+  dest <~ src
 
-template `==`*[T1: tuple, T2: tuple and not T1](t1: T1, t2: T2): bool =
+converter toTuple*[T: tuple](t: tuple): T =
+  result =~ t
+
+proc to*[T1: tuple](t: T1, T2: typedesc[tuple]): T2 =
+  result =~ t
+
+proc to*[T2: tuple](t: tuple): T2 =
+  to(t, T2)
+
+template `==~`*[T1: tuple, T2: tuple](t1: T1, t2: T2): bool =
   t1 == toTuple[T1](t2)
-
-template `=`*[T1: tuple, T2: tuple and not T1](t1: var T1, t2: T2) =
-  t1 = toTuple[T1](t2)
-
