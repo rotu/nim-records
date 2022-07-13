@@ -29,44 +29,36 @@ proc concat*(t1: tuple, t2: tuple): auto =
 
 proc `&` *(t1: tuple, t2: tuple): auto = concat(t1, t2)
 
-proc tupleKeys*(T: typedesc[tuple]): TupleKeys =
-  for c in getTypeImpl(T).children:
-    expectKind(c, nnkIdentDefs)
-    result.add(c[0].repr)
+proc tupleKeys*[T: tuple](): TupleKeys =
+  macro tupleKeysImpl(): seq[string] =
+    var res: seq[string]
+    for f in (getTypeImpl(T)).children:
+      res.add(f[0].repr())
+    return newLit(res)
+  tupleKeysImpl()
 
-template tupleKeys*(t: tuple): TupleKeys =
+proc tupleKeys*(T: typedesc[tuple]): TupleKeys =
+  tupleKeys[T]()
+
+proc tupleKeys*[T: tuple](t: T): TupleKeys =
   tupleKeys(typeof(t))
 
-proc getFieldNames*[T: tuple](): TupleKeys =
-  macro getFieldNamesImpl(): seq[string] =
-    newLit:
-      collect:
-        for f in T.getTypeImpl.children:
-          f[0].repr()
-  getFieldNamesImpl()
-
-proc proj*[T: tuple](t: T, tags: TupleKeys): tuple =
+proc proj*[T: tuple](t: T, tags: static[openArray[string]]): tuple =
   ## Rearrange/select named fields from a named tuple,
   ## returning a new named tuple
-  macro projImpl(): tuple =
-    result = newNimNode(nnkTupleConstr)
-    for tag in tags:
-      result.add(newColonExpr(
-        ident(tag),
-        newDotExpr(bindSym("t"), ident(tag))
-      ))
-  projImpl()
-
-proc proj*[T: tuple](t: T, ixes: static[seq[Ordinal]]) =
-  ## Rearrange/select named fields from a positional tuple,
-  ## returning a new positional tuple
-  macro projImpl(): tuple =
-    result = newNimNode(nnkTupleConstr)
-    for ix in ixes:
-      result.add(newTree(nnkBracketExpr, t, newLit(ix)))
-  projImpl()
+  when len(tags) == 0:
+    ()
+  else:
+    macro projImpl(): tuple =
+      result = newNimNode(nnkTupleConstr)
+      for tag in tags:
+        result.add(newColonExpr(
+          ident(tag),
+          newDotExpr(bindSym("t"), ident(tag))
+        ))
+    projImpl()
 
 # order fields alphabetically
-proc sortFields*[T: tuple](arg: T): tuple =
-  const fields = sorted(getFieldNames[T]())
+proc sortTupleKeys*[T: tuple](arg: T): tuple =
+  const fields = sorted(tupleKeys[T]())
   proj(arg, fields)

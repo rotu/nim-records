@@ -13,17 +13,17 @@ import macros
 
 #   call(fn,("a","b"),(c:"c"))
 
-test "fieldnames":
+test "tupleKeys":
   let x = (a: 1, b: 2)
   type T = typeof(x)
-  check getFieldNames[typeof(x)]() == @["a", "b"]
-  check getFieldNames[T]() == @["a", "b"]
-  check getFieldNames[tuple[b: int, a: string]]() == @["b", "a"]
+  check tupleKeys(typeof(x)) == @["a", "b"]
+  check tupleKeys(T) == @["a", "b"]
+  check tupleKeys(tuple[b: int, a: string]) == @["b", "a"]
 
-test "sortfields":
+test "sortTupleKeys":
   let x = (a: 1, b: 2, c: 3)
-  check sortFields(x) == x
-  check sortFields((x: 1, a: 2)) == (a: 2, x: 1)
+  check sortTupleKeys(x) == x
+  check sortTupleKeys((x: 1, a: 2)) == (a: 2, x: 1)
 
 
 test "tuplecat1":
@@ -69,11 +69,11 @@ test "tuplecat1":
 
 test "test sort":
   let z = (x: 1)
-  check sortFields(z) == z
+  check sortTupleKeys(z) == z
   let b = (x: 1, y: 2, w: "w")
-  check sortFields(b) == (w: "w", x: 1, y: 2)
+  check sortTupleKeys(b) == (w: "w", x: 1, y: 2)
   # check tupleKeys(b) == ['x','y','w']
-  # check tupleKeys(sortFields(b)) == ['w','x','y']
+  # check tupleKeys(sortTupleKeys(b)) == ['w','x','y']
 
 # test "reshuffle":
 #   let z = (x:1, y:2)

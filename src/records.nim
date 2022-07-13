@@ -19,7 +19,7 @@ type Record[T: tuple] = object
    data: T
 
 proc toRecord*[T: tuple](x: T): auto =
-   let sorted = sortFields(x)
+   let sorted = sortTupleKeys(x)
    Record[typeof(sorted)](data: sorted)
 
 proc toTuple*[T: tuple](x: Record[T]): auto =
