@@ -14,14 +14,14 @@ proc toSeqSet*(strings: openArray[string]): SeqSet =
    assert (len(strings) == len(deduplicate(strings)))
    SeqSet(@strings)
 
-type VennPart* = enum
+type VennPart* {.pure.} = enum 
    left
    middle
    right
 
 proc `==~`*(ss1,ss2:SeqSet): bool =
    ## order-insensitive equality check
-   sorted(@ss1) == sorted(@ss2)
+   (sorted @ss1) == (sorted @ss2)
 
 proc venn *(ss1, ss2: SeqSet): array[VennPart, SeqSet] =
    ## takes a pair of SeqSets A, B and computes their venn diagram
@@ -37,7 +37,7 @@ proc intersect*(s1, s2: SeqSet): SeqSet =
 
 proc union*(s1, s2: SeqSet): SeqSet =
    let t = venn(s1, s2)
-   concat(concat(t[left], t[middle]), t[right])
+   concat(s1, t[right])
 
 proc difference*(s1, s2: SeqSet): SeqSet =
    venn(s1, s2)[left]

@@ -41,7 +41,7 @@ proc `[]`*(t: tuple, key: static string): auto =
 
 proc set*(t: var tuple, key: static string, value: sink auto) =
   ## set a named tuple field by name
-  macro setImpl(): typed =
+  macro setImpl() =
     newAssignment(newDotExpr(bindSym("t"), ident(key)), bindSym("value"))
   setImpl()
 
