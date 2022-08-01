@@ -90,10 +90,10 @@ test "union order varies":
 test "join":
   let x = (a: 1, b: 2)
   check join(x, x) == some(x)
-  let ab = (a:1,b:2)
-  let bc = (b:2,c:3)
-  let abc = (a:1,b:2,c:3)
-  check join(ab,bc) == some(abc)
+  let ab = (a: 1, b: 2)
+  let bc = (b: 2, c: 3)
+  let abc = (a: 1, b: 2, c: 3)
+  check join(ab, bc) == some(abc)
 
 
 test "joinSequences":
@@ -131,4 +131,3 @@ test "groupby":
   echo typeof(grouped)
   check((grouped[k1]).len == 2)
   check(grouped[k2].len == 1)
-

@@ -17,7 +17,7 @@ test "testAssignment":
     check (typeof yAsX) is (typeof x)
     check yAsX[0] == x[0]
 
-    let y2AsX = y.to[:typeof x]()
+    let y2AsX = y.to(typeof x)
     check (typeof y2AsX) is (typeof x)
     check y2AsX[0] == x[0]
 
@@ -26,3 +26,10 @@ test "assignfrom":
     let src = (x: 3)
     dest <~ src
     check dest == (x: 3, y: 2)
+
+test "getsetbyname":
+    var x = (a:1,b: "boo")
+    check x["a"] == 1
+    check x["b"] == "boo"
+    x["b"] = "bang!"
+    # check x.b == "bang!"

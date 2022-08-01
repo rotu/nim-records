@@ -30,37 +30,42 @@ proc concat*(t1: tuple, t2: tuple): auto =
 
 proc `&` *(t1: tuple, t2: tuple): auto = concat(t1, t2)
 
-proc tupleKeys*[T: tuple](): SeqSet =
-  macro tupleKeysImpl(): seq[string] =
-    var res: seq[string]
-    for f in (getTypeImpl(T)).children:
-      res.add(f[0].repr())
-    return newLit(res)
-  SeqSet(tupleKeysImpl())
+proc tupleKeys[T: tuple](): TupleKeys =
+  macro tupleKeysImpl(): untyped =
+    # building an array
+    result = newNimNode(nnkBracket)
+    let tupleType = getTypeImpl(T)
+    expectKind(tupleType, nnkTupleTy)
+    for f in tupleType.children:
+      let fieldName = f[0]
+      expectKind(fieldName, nnkSym)
+      result.add(newLit(fieldName.strVal))
+  # and convert to a seq
+  @(tupleKeysImpl())
 
-proc tupleKeys*(T: typedesc[tuple]): TupleKeys =
+proc tupleKeys*(T: type tuple): TupleKeys =
   tupleKeys[T]()
 
 template tupleKeys*[T: tuple](t: T): TupleKeys =
   tupleKeys(typeof(t))
 
-proc proj*[T: tuple](t: T, tags: static[openArray[string]]): tuple =
+proc proj*[T: tuple](t: T, keys: static[openArray[string]]): tuple =
   ## Rearrange/select named fields from a named tuple,
   ## returning a new named tuple
-  when len(tags) == 0:
+  when len(keys) == 0:
     ()
   else:
     macro projImpl(): tuple =
       result = newNimNode(nnkTupleConstr)
-      for tag in tags:
+      for key in keys:
         result.add(newColonExpr(
-          ident(tag),
-          newDotExpr(bindSym("t"), ident(tag))
+          ident(key),
+          newDotExpr(bindSym("t"), ident(key))
         ))
     projImpl()
 
-proc proj*[T:tuple](t:openArray[T], tags:static[openArray[string]]):auto =
-  t.map((x:T) => proj(x, tags))
+proc proj*[T: tuple](t: openArray[T], keys: static[openArray[string]]): auto =
+  t.map((x: T) => proj(x, keys))
 
 proc join*[T1: tuple, T2: tuple](t1: T1, t2: T2): auto =
   const v = venn(tupleKeys(T1), tupleKeys(T2))
@@ -73,7 +78,7 @@ proc join*[T1: tuple, T2: tuple](t1: T1, t2: T2): auto =
   else:
     none(typeof(maybevalue))
 
-proc join*[T1: tuple, T2: tuple](table1: openArray[T1], table2: openArray[T2]): auto =
+proc join*(table1: openArray[tuple], table2: openArray[tuple]): auto =
   let res = collect:
     for row1 in table1:
       for row2 in table2:
@@ -82,17 +87,18 @@ proc join*[T1: tuple, T2: tuple](table1: openArray[T1], table2: openArray[T2]): 
           unsafeGet(mayberow)
   res
 
-proc groupBy*[T:tuple](tbl: openArray[T], keys: TupleKeys): auto =
-   const otherKeys = tupleKeys(T).difference(keys)
-   type K = typeof(block: (for row in tbl: proj(row, keys)))
-   type V = typeof(block: (for row in tbl: proj(row, otherKeys)))
-   type VV = seq[V]
+proc groupBy*(tbl: openArray[tuple], keys: TupleKeys): auto =
+  type T = typeof(tbl[0])
+  const otherKeys = tupleKeys(T).difference(keys)
+  type K = typeof(block: (for row in tbl: proj(row, keys)))
+  type V = typeof(block: (for row in tbl: proj(row, otherKeys)))
+  type VV = seq[V]
 
-   var res: Table[K, VV]
+  var res: Table[K, VV]
 
-   for row in tbl:
-      let k = proj(row, keys)
-      let v = proj(row, otherKeys)
-      mgetOrPut[K, VV](res, k, @[]).add(v)
+  for row in tbl:
+    let k = proj(row, keys)
+    let v = proj(row, otherKeys)
+    mgetOrPut[K, VV](res, k, @[]).add(v)
 
-   return res
+  return res
