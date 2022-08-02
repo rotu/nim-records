@@ -1,25 +1,22 @@
-import std/sequtils
-import std/algorithm
+import std/[algorithm, sequtils]
 
+type TupleKeys* = static[seq[string]]
+type TupleKeysIn* = static[openArray[string]]
 type SeqSet* = seq[string]
 ## a dead simple set implementation based on sequences.
-
-# proc `==` *(s: SeqSet, s2: SeqSet): bool {.borrow.}
-# proc `@` *(s: SeqSet): seq[string] {.borrow.}
-# proc `card` *(s: SeqSet): int = len(seq[string](s))
-# proc `concat` *(s1: SeqSet, s2: SeqSet): SeqSet {.borrow.}
-# proc `add` *(s1:var SeqSet,v1:sink string) {.borrow.}
 
 proc toSeqSet*(strings: openArray[string]): SeqSet =
    assert (len(strings) == len(deduplicate(strings)))
    SeqSet(@strings)
 
-type VennPart* {.pure.} = enum 
+proc toSeqSet*(s: SeqSet): SeqSet = s
+
+type VennPart* {.pure.} = enum
    left
    middle
    right
 
-proc `==~`*(ss1,ss2:SeqSet): bool =
+proc `==~`*(ss1, ss2: SeqSet): bool =
    ## order-insensitive equality check
    (sorted @ss1) == (sorted @ss2)
 
@@ -41,6 +38,9 @@ proc union*(s1, s2: SeqSet): SeqSet =
 
 proc difference*(s1, s2: SeqSet): SeqSet =
    venn(s1, s2)[left]
+
+proc isSubset*(s1, s2: SeqSet): bool =
+   s1.difference(s2).len == 0
 
 proc symmetricDifference*(s1, s2: SeqSet): SeqSet =
    let t = venn(s1, s2)

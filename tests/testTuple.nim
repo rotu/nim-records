@@ -1,13 +1,7 @@
-import unittest
-import std/options
-import std/sequtils
-import std/tables
+import std/[macros, options, sugar, typetraits, unittest]
 import records/seqSet
 import records/lenientTuple
-import std/sugar
 import records/tupleops
-import std/typetraits
-import macros
 
 # test "call":
 #   proc fn(a:string, b:string, c:string) =
@@ -42,34 +36,24 @@ test "tuplecat1":
   check concat(empty, otherempty) == ()
 
   let nums1 = (1, "b", 3)
-  echo "concatting"
   check concat(nums1, nums1) == (1, "b", 3, 1, "b", 3)
   check (nums1 & nums1) == (1, "b", 3, 1, "b", 3)
 
+test "projection":
+  let x = (a: 1, b: "hi", c: true)
+  check x.proj([]) == ()
+  check (()).proj([]) == ()
+  check x.proj(["a", "c"]) == (a: 1, c: true)
+  check x.proj(x.tupleKeys) == x
+  check x.proj(["c", "b", "a"]) == (c: true, b: "hi", a: 1)
+  check x.reject(["a"]) == x.proj(["b", "c"])
 
 
-# test "tuplecat":
-#   let c = concat( (1, 2) , (3, "a") )
-#   echo (c[3] & "foo")
-#   let d = (a:1,b:2)
-#   let d2 = (c:3,d:5)
-
-#   # for f,g in fieldPairs(d):
-#   #   echo f," ="
-#   # echo dumpTypeInst(d)
-#   echo merge(d, d2)
-#   let r = R(a:1,b:5)
-#   # echo merge (r,d2)
-#   for k,v in d.fieldPairs:
-#     echo k,":=",v
-#   # echo merge(r, (c:5,d:1))
-#   call(echo,(1,2,3))
-
-
-# test "reshuffle":
-#   let z = (x:1, y:2)
-#   let y = (y:2,x:1)
-#   check y == reshuffle[typeof(y), typeof(z)](z)
+test "concatenation":
+  let c = concat( (1, 2), (3, "a"))
+  check c == (1, 2, 3, "a")
+  let d = (a: 1, b: 2)
+  let d2 = (c: 3, d: 5)
 
 test "get":
   let x = ((a: 1, b: "B"))
@@ -94,39 +78,3 @@ test "join":
   let abc = (a: 1, b: 2, c: 3)
   check join(ab, bc) == some(abc)
 
-
-test "joinSequences":
-  var squares = collect:
-    for i in -3..3:
-      (x: i, y: (i*i))
-  check len(squares) == 7
-  let squares2 = collect:
-    for i in -3..3:
-      (y: i*i, z: i)
-  let foo = join(squares, squares2)
-
-  # 0 has one square all other values have 2 squares
-  check len(foo) == 13
-
-  for rec in foo:
-    check rec["x"]*rec["x"] == rec["y"]
-    check rec["z"]*rec["z"] == rec["y"]
-
-test "proj":
-  let table = collect:
-    for i in -3..3:
-      (x: i, y: (i*i))
-  let xs = proj(table, ["x"])
-
-test "groupby":
-  let table = [
-    (x: 1, y: 2),
-    (x: 1, y: 3),
-    (x: 2, y: 2)
-  ]
-  let grouped = groupBy(table, @["x"])
-  let k1 = (x: 1)
-  let k2 = (x: 2)
-  echo typeof(grouped)
-  check((grouped[k1]).len == 2)
-  check(grouped[k2].len == 1)

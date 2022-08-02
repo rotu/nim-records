@@ -28,7 +28,7 @@ test "assignfrom":
     check dest == (x: 3, y: 2)
 
 test "getsetbyname":
-    var x = (a:1,b: "boo")
+    var x = (a: 1, b: "boo")
     check x["a"] == 1
     check x["b"] == "boo"
     x["b"] = "bang!"
