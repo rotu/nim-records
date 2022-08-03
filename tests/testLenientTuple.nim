@@ -1,5 +1,4 @@
-import unittest
-
+import std/unittest
 import records/lenientTuple
 
 
@@ -32,4 +31,17 @@ test "getsetbyname":
     check x["a"] == 1
     check x["b"] == "boo"
     x["b"] = "bang!"
-    # check x.b == "bang!"
+    check x.b == "bang!"
+
+    check not compiles(x["c"])
+    check not compiles(x["c"] = 4)
+
+test "len":
+    var x = ()
+    check len(x) == 0
+    check len(typeof(x)) == 0
+    check len((x: 1)) == 1
+    check len(typeof (x: 1)) == 1
+    check len((1, 2, 3)) == 3
+    check len(typeof (1, 2, 3)) == 3
+

@@ -1,22 +1,15 @@
 import std/[macros, options, sugar, typetraits, unittest]
-import records/seqSet
-import records/lenientTuple
-import records/tupleops
-
-# test "call":
-#   proc fn(a:string, b:string, c:string) =
-#     check a=="a"
-#     check b=="b"
-#     check c=="c"
-
-#   call(fn,("a","b"),(c:"c"))
+import records/[seqSet, tupleops]
 
 test "tupleKeys":
   let x = (a: 1, b: 2)
   type T = typeof(x)
+
   check tupleKeys(typeof(x)) == @["a", "b"]
   check tupleKeys(T) == @["a", "b"]
   check tupleKeys(tuple[b: int, a: string]) == @["b", "a"]
+  check len(tupleKeys(())) == 0
+
 
 test "tuplecat1":
   check concat((), ()) == ()
@@ -41,34 +34,16 @@ test "tuplecat1":
 
 test "projection":
   let x = (a: 1, b: "hi", c: true)
-  check x.proj([]) == ()
-  check (()).proj([]) == ()
-  check x.proj(["a", "c"]) == (a: 1, c: true)
-  check x.proj(x.tupleKeys) == x
-  check x.proj(["c", "b", "a"]) == (c: true, b: "hi", a: 1)
-  check x.reject(["a"]) == x.proj(["b", "c"])
-
+  check x.project([]) == ()
+  check (()).project([]) == ()
+  check x.project(["a", "c"]) == (a: 1, c: true)
+  check x.project(x.tupleKeys) == x
+  check x.project(["c", "b", "a"]) == (c: true, b: "hi", a: 1)
+  check x.reject(["a"]) == x.project(["b", "c"])
 
 test "concatenation":
   let c = concat( (1, 2), (3, "a"))
   check c == (1, 2, 3, "a")
-  let d = (a: 1, b: 2)
-  let d2 = (c: 3, d: 5)
-
-test "get":
-  let x = ((a: 1, b: "B"))
-  check (get(x, "a")) == 1
-  check x["a"] == 1
-  check get(x, "b") == "B"
-  check x["b"] == "B"
-
-test "union order varies":
-  let x = (a: 1)
-  let y = (b: 2)
-  let z = (c: 3)
-
-  check((x & y & z) ==~ (z & x & y))
-  check ((x & y) ==~ (y & x))
 
 test "join":
   let x = (a: 1, b: 2)
@@ -78,3 +53,7 @@ test "join":
   let abc = (a: 1, b: 2, c: 3)
   check join(ab, bc) == some(abc)
 
+test "rename":
+  let x = (a: 1, b: 2)
+  let x1 = x.reject(["b"]).concat((c: x.b))
+  check x1 == (a: 1, c: 2)

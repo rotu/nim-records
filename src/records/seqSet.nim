@@ -1,7 +1,5 @@
 import std/[algorithm, sequtils]
 
-type TupleKeys* = static[seq[string]]
-type TupleKeysIn* = static[openArray[string]]
 type SeqSet* = seq[string]
 ## a dead simple set implementation based on sequences.
 

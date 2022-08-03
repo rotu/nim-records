@@ -1,10 +1,9 @@
-import tupleops
-import macros
-import ./seqSet
+import std/macros
+import ./seqSet, ./tupleops
 
 proc `<~` *(dest: var (tuple | object); src: tuple) =
   ## Assign from.
-  ## Assign all values in a named tuple to the properties with corresponding names
+  ## Assign all values in a named tuple to another tuple, possibly with more keys
   macro assignFromImpl(): untyped =
     var res = newNimNode(nnkStmtList)
     for prop in tupleKeys((src)):
@@ -14,10 +13,9 @@ proc `<~` *(dest: var (tuple | object); src: tuple) =
     res
   assignFromImpl()
 
-proc `=~` *[T1: tuple; T2: tuple](dest: var T1; src: T2) =
+proc `=~` *(dest: var tuple; src: tuple) =
   ## Assign all.
-  ## Assign values from one named tuple to another,
-  ## reordering as necessary
+  ## Assign values from one named tuple to another with the same keys, possibly in a different order
   static:
     assert tupleKeys(dest) ==~ tupleKeys(src)
   dest <~ src
@@ -29,22 +27,35 @@ template `==~`*(t1: tuple; t2: tuple): bool =
   ## check whether two named tuples are the same, ignoring order
   t1 == t2.to(typeof t1)
 
-proc get*(t: tuple; key: static string): auto =
-  ## get a named tuple field by name
-  macro getImpl(): untyped =
-    newDotExpr(bindSym("t"), ident(key))
-  getImpl()
-
 proc `[]`*(t: tuple; key: static string): auto =
   ## get a named tuple field by name
-  get(t, key)
-
-proc set*(t: var tuple; key: static string; value: sink auto) =
-  ## set a named tuple field by name
-  macro setImpl() =
-    newAssignment(newDotExpr(bindSym("t"), ident(key)), bindSym("value"))
-  setImpl()
+  macro getFieldImpl(): untyped =
+    newDotExpr(bindSym("t"), ident(key))
+  getFieldImpl()
 
 proc `[]=`*(t: var tuple; key: static string; value: sink auto) =
   ## set a named tuple field by name
-  set(t, key, value)
+  macro setFieldImpl() =
+    newAssignment(newDotExpr(bindSym("t"), ident(key)), bindSym("value"))
+  setFieldImpl()
+
+proc len*(T: type tuple): int =
+  macro tupleLenImpl(): untyped =
+    let ti = getTypeImpl(bindSym("T"))
+
+    expectKind(ti, nnkBracketExpr)
+    let typedescSym = ti[0]
+
+    expectKind(typedescSym, nnkSym)
+    assert(typedescSym.strVal == "typeDesc")
+
+    let tupleDef = ti[1]
+    return newLit(len(tupleDef))
+
+  tupleLenImpl()
+
+template len*(t: tuple): int =
+  len(typeof t)
+
+proc hasKey*(t: tuple; key: static[string]): bool =
+  key in tupleKeys(t)

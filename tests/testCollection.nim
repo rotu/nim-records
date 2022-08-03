@@ -1,7 +1,5 @@
-import std/[sugar, unittest, sequtils]
-import records/collection
-import records/lenientTuple
-import std/tables
+import std/[sequtils, sugar, tables, unittest]
+import records/[collection, lenientTuple]
 
 test "joinSequences":
   var squares = collect:
@@ -20,11 +18,11 @@ test "joinSequences":
     check rec["x"]*rec["x"] == rec["y"]
     check rec["z"]*rec["z"] == rec["y"]
 
-test "proj":
+test "project":
   let table = collect:
     for i in -3..3:
       (x: i, y: (i*i))
-  let xs = proj(table, ["x"])
+  let xs = project(table, ["x"])
 
 test "groupby":
   let table = [
