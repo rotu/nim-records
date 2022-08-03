@@ -32,30 +32,28 @@ proc `&` *(t1: tuple, t2: tuple): auto = concat(t1, t2)
 
 proc tupleKeys*(T: type tuple): TupleKeys =
   ## Return all field names of the given tuple type
-  when T is (typeof ()):
-    seq[string].default
-  else:
-    macro tupleKeysImpl(): untyped =
-      # building an array
-      result = newNimNode(nnkBracket)
-      let tt = getTypeImpl(bindSym("T"))
 
-      let typedescSym = tt[0]
-      expectKind(typedescSym, nnkSym)
-      assert(typedescSym.strVal == "typeDesc")
+  macro tupleKeysImpl(): untyped =
+    # building an array
+    result = newNimNode(nnkBracket)
+    let tt = getTypeImpl(bindSym("T"))
 
-      let tupleType = getTypeImpl(tt[1])
-      if len(tupleType) == 0:
-        # corner case: empty tuples are of kind nnkTupleConstr
-        expectKind(tupleType, {nnkTupleConstr, nnkTupleTy})
-      else:
-        expectKind(tupleType, nnkTupleTy)
-        for f in tupleType.children:
-          let fieldName = f[0]
-          expectKind(fieldName, nnkSym)
-          result.add(newLit(fieldName.strVal))
-    # and convert to a seq
-    return @(tupleKeysImpl())
+    let typedescSym = tt[0]
+    expectKind(typedescSym, nnkSym)
+    assert(typedescSym.strVal == "typeDesc")
+
+    let tupleType = getTypeImpl(tt[1])
+    if len(tupleType) == 0:
+      # corner case: empty tuples are of kind nnkTupleConstr
+      expectKind(tupleType, {nnkTupleConstr, nnkTupleTy})
+    else:
+      expectKind(tupleType, nnkTupleTy)
+      for f in tupleType.children:
+        let fieldName = f[0]
+        expectKind(fieldName, nnkSym)
+        result.add(newLit(fieldName.strVal))
+  # and convert to a seq
+  return @(tupleKeysImpl())
 
 template tupleKeys*(t: tuple): TupleKeys =
   ## Return all the field names of the given tuple
