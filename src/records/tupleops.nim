@@ -94,3 +94,14 @@ proc join*(t1: tuple, t2: tuple): auto =
     return some(maybevalue)
   else:
     none(typeof(maybevalue))
+
+proc meet*(t1: tuple, t2: tuple): auto =
+  ## Given two tuples, check whether they agree on all shared keys
+  ## If they do, return the tuple of all shared keys
+  ## If not, return none
+  const v = venn(tupleKeys(t1), tupleKeys(t2))
+  let common = t1.project(v[middle])
+  if common == t2.project(v[middle]):
+    return some(common)
+  else:
+    none(typeof(common))
