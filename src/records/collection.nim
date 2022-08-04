@@ -18,18 +18,17 @@ proc join*(table1: openArray[tuple], table2: openArray[tuple]): auto =
     res.add(unsafeGet maybeRow)
  res
 
-proc groupBy*(tbl: openArray[tuple], keys: static openArray[string]): auto =
- type T = typeof(tbl[0])
+proc groupBy*(rows: openArray[tuple], keys: static openArray[string]): auto =
+ type T = typeof(block: (for row in rows: row))
  const otherKeys = tupleKeys(T).difference(keys)
- type K = typeof(block: (for row in tbl: project(row, keys)))
- type V = typeof(block: (for row in tbl: project(row, otherKeys)))
- type VV = seq[V]
+ type K = typeof(block: (for row in rows: project(row, keys)))
+ type V = typeof(block: (for row in rows: project(row, otherKeys)))
 
- var res: Table[K, VV]
+ var res: Table[K, seq[V]]
 
- for row in tbl:
+ for row in rows:
   let k = project(row, keys)
   let v = project(row, otherKeys)
-  mgetOrPut[K, VV](res, k, @[]).add(v)
+  mgetOrPut(res, k, @[]).add(v)
 
  return res
