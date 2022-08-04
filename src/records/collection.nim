@@ -5,6 +5,10 @@ import ./seqSet, ./tupleops
 proc project*(t: openArray[tuple], keys: static openArray[string]): auto =
  t.map((x: auto) => x.project keys)
 
+proc rename*(t: openArray[tuple], newOldPairs: static openArray[(string,
+  string)]): auto =
+ t.map((x: auto) => x.rename newOldPairs)
+
 proc join*(table1: openArray[tuple], table2: openArray[tuple]): auto =
  var res: seq[typeof unsafeGet(join(table1[0], table2[0]))]
  for row1 in table1:

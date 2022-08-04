@@ -100,3 +100,30 @@ proc meet*(t1: tuple, t2: tuple): auto =
     some common
   else:
     none(typeof common)
+
+proc rename*(t: tuple, newOldPairs: static openArray[(string, string)]): auto =
+  macro renameImpl(): untyped =
+    result = newNimNode(nnkTupleConstr)
+    let tupleType = getTypeImpl(bindSym "t")
+    expectKind(tupleType, nnkTupleTy)
+    for d in children(tupleType):
+      d.expectKind(nnkIdentDefs)
+      let prop = d[0]
+      prop.expectKind(nnkSym)
+      let thisKey = prop.strVal
+
+      var didRename = false
+      for (newKey, oldKey) in newOldPairs:
+        if oldKey == thisKey:
+          didRename = true
+          result.add newColonExpr(
+            ident(newKey),
+            newTree(nnkDotExpr, bindSym "t", ident(oldKey))
+          )
+      if not didRename:
+        result.add newColonExpr(
+          prop,
+          newTree(nnkDotExpr, bindSym "t", prop)
+        )
+  renameImpl()
+

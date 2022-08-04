@@ -1,4 +1,4 @@
-import std/[macros, options, sugar, typetraits, unittest]
+import std/[macros, options, typetraits, unittest]
 import records/[seqSet, tupleops]
 
 test "tupleKeys":
@@ -57,3 +57,7 @@ test "rename":
   let x = (a: 1, b: 2)
   let x1 = x.reject(["b"]).concat((c: x.b))
   check x1 == (a: 1, c: 2)
+  let x1alt = x.rename({"c": "b"})
+  check x1 == x1alt
+
+  check (x: 1, y: 2, z: 3).rename({"x": "y", "y": "x"}) == (y: 1, x: 2, z: 3)
