@@ -41,6 +41,7 @@ proc `[]=`*(t: var tuple; key: static string; value: sink auto) =
   setFieldImpl()
 
 proc len*(T: type tuple): int =
+  ## get the number of fields in a tuple type
   macro tupleLenImpl(): untyped =
     let ti = getTypeImpl(bindSym "T")
 
@@ -56,7 +57,9 @@ proc len*(T: type tuple): int =
   tupleLenImpl()
 
 template len*(t: tuple): int =
+  ## get the number of fields in a tuple
   len(typeof t)
 
-proc hasKey*(t: tuple; key: static string): bool =
+template hasKey*(t: tuple | (type tuple); key: static string): bool =
+  ## true if there is a field with the given name in the tuple or tuple type
   key in (tupleKeys t)
