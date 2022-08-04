@@ -1,7 +1,7 @@
 import std/[algorithm, sequtils]
 
 type SeqSet* = seq[string]
-## a dead simple set implementation based on sequences.
+## a dead simple ordered set implementation based on sequences.
 
 proc toSeqSet*(strings: openArray[string]): SeqSet =
    assert (len(strings) == len(deduplicate(strings)))

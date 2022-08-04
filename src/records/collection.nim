@@ -4,15 +4,15 @@ import ./seqSet, ./tupleops
 
 # single-record operations generalized to operations on groups of records
 proc project*(t: openArray[tuple], keys: TupleKeysIn): auto =
- t.map((x: auto) => project(x, keys))
+ t.map((x: auto) => x.project keys)
 
 proc join*(table1: openArray[tuple], table2: openArray[tuple]): auto =
- let res = collect:
-  for row1 in table1:
+ var res: seq[typeof unsafeGet(join(table1[0], table2[0]))]
+ for row1 in table1:
    for row2 in table2:
-    let mayberow = row1.join(row2)
-    if (isSome(mayberow)):
-     unsafeGet(mayberow)
+     let maybeRow = row1.join(row2)
+     if (isSome maybeRow):
+        res.add(unsafeGet maybeRow)
  res
 
 proc groupBy*(tbl: openArray[tuple], keys: TupleKeysIn): auto =
