@@ -5,16 +5,19 @@ import ./seqSet, ./tupleops
 proc project*(t: openArray[tuple], keys: static openArray[string]): auto =
  t.map((x: auto) => x.project keys)
 
+proc reject*(t: openArray[tuple], keys: static openArray[string]): auto =
+ t.map((x: auto) => x.reject keys)
+
 proc rename*(t: openArray[tuple], newOldPairs: static openArray[(string,
   string)]): auto =
  t.map((x: auto) => x.rename newOldPairs)
 
 proc join*(table1: openArray[tuple], table2: openArray[tuple]): auto =
- var res: seq[typeof unsafeGet(join(table1[0], table2[0]))]
+ var res: seq[typeof (unsafeGet join(table1[0], table2[0]))]
  for row1 in table1:
   for row2 in table2:
    let maybeRow = row1.join(row2)
-   if (isSome maybeRow):
+   if isSome maybeRow:
     res.add(unsafeGet maybeRow)
  res
 
@@ -32,3 +35,7 @@ proc groupBy*(rows: openArray[tuple], keys: static openArray[string]): auto =
   mgetOrPut(res, k, @[]).add(v)
 
  return res
+
+proc select*[T](rows: openArray[T], predicate: T->bool): seq[T] =
+ ## get all rows for which the predicate is true
+ filter(rows, predicate)

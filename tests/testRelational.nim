@@ -1,5 +1,5 @@
 import std/[sequtils, sugar, tables, unittest]
-import records/[collection, lenientTuple]
+import records/[relational, lenientTuple]
 
 test "joinSequences":
   var squares = collect:
@@ -35,3 +35,14 @@ test "groupby":
   let k2 = (x: 2)
   check((grouped[k1]).len == 2)
   check(grouped[k2].len == 1)
+
+test "select":
+  let rows = [
+    (a: 1, b: 2),
+    (a: 2, b: 4),
+    (a: 3, b: 6)
+  ]
+  let xs = rows.select(r=>(r.a mod 2 == 1))
+  check (a: 1, b: 2) in xs
+  check (a: 2, b: 4) notin xs
+  check (a: 3, b: 6) in xs

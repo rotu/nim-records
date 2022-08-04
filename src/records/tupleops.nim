@@ -126,4 +126,3 @@ proc rename*(t: tuple, newOldPairs: static openArray[(string, string)]): auto =
           newTree(nnkDotExpr, bindSym "t", prop)
         )
   renameImpl()
-

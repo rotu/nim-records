@@ -61,5 +61,5 @@ template len*(t: tuple): int =
   len(typeof t)
 
 template hasKey*(t: tuple | (type tuple); key: static string): bool =
-  ## true if there is a field with the given name in the tuple or tuple type
+  ## true if there is a field with the given key is in the tuple or tuple type
   key in (tupleKeys t)
