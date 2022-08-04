@@ -3,7 +3,7 @@ import os
 # Package
 version = "0.1.0"
 author = "dan"
-description = "Dan's magic records library"
+description = "Operations on tuples as heterogeneous record types a la Relational Algebra"
 license = "MIT"
 srcDir = "src"
 binDir = "build"
