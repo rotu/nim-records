@@ -7,8 +7,6 @@ proc toSeqSet*(strings: openArray[string]): SeqSet =
    assert (len(strings) == len(deduplicate(strings)))
    SeqSet(@strings)
 
-proc toSeqSet*(s: SeqSet): SeqSet = s
-
 type VennPart* {.pure.} = enum
    left
    middle
@@ -16,30 +14,28 @@ type VennPart* {.pure.} = enum
 
 proc `==~`*(ss1, ss2: SeqSet): bool =
    ## order-insensitive equality check
-   (sorted @ss1) == (sorted @ss2)
+   (sorted ss1) == (sorted ss2)
+
+proc intersect*(s1, s2: SeqSet): SeqSet =
+   filter(s1, proc(x: string): bool = x in s2)
+
+proc difference*(s1, s2: SeqSet): SeqSet =
+   filter(s1, proc(x: string): bool = x notin s2)
 
 proc venn *(ss1, ss2: SeqSet): array[VennPart, SeqSet] =
    ## takes a pair of SeqSets A, B and computes their venn diagram
    ## left: A - B
    ## middle: A intersect B
    ## right: B - A
-   result[left] = toSeqSet(filter(ss1, proc(x: string): bool = x notin ss2))
-   result[middle] = toSeqSet(filter(ss1, proc(x: string): bool = x in ss2))
-   result[right] = toSeqSet(filter(ss2, proc(x: string): bool = x notin ss1))
-
-proc intersect*(s1, s2: SeqSet): SeqSet =
-   venn(s1, s2)[middle]
+   result[left] = ss1.difference(ss2)
+   result[middle] = ss1.intersect(ss2)
+   result[right] = ss2.difference(ss1)
 
 proc union*(s1, s2: SeqSet): SeqSet =
-   let t = venn(s1, s2)
-   concat(s1, t[right])
-
-proc difference*(s1, s2: SeqSet): SeqSet =
-   venn(s1, s2)[left]
+   concat(s1, difference(s2, s1))
 
 proc isSubset*(s1, s2: SeqSet): bool =
-   s1.difference(s2).len == 0
+   difference(s1, s2).len == 0
 
 proc symmetricDifference*(s1, s2: SeqSet): SeqSet =
-   let t = venn(s1, s2)
-   concat(t[left], t[right])
+   concat(difference(s1, s2), difference(s2, s1))

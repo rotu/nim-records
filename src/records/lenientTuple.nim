@@ -58,5 +58,5 @@ proc len*(T: type tuple): int =
 template len*(t: tuple): int =
   len(typeof t)
 
-proc hasKey*(t: tuple; key: static[string]): bool =
+proc hasKey*(t: tuple; key: static string): bool =
   key in (tupleKeys t)
