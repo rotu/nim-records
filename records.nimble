@@ -23,3 +23,6 @@ task style, "enforce code style":
   echo ("prettying ", repr(paths))
   for path in paths:
     exec "nimpretty " & path
+
+task bdoc, "build docs":
+  exec "nim doc --project --outdir:build/doc src/records"
