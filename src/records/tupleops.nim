@@ -81,10 +81,11 @@ proc join*(t1: tuple, t2: tuple): auto =
   ## If they do, return some tuple with all key-value pairs
   ## If not, return none
   const v = venn(tupleKeys t1, tupleKeys t2)
-  let common1 = t1.project v[middle]
-  let common2 = t2.project v[middle]
 
   let maybevalue = t1 & (t2.project v[right])
+
+  let common1 = t1.project v[middle]
+  let common2 = t2.project v[middle]
   if common1 == common2:
     some maybevalue
   else:
