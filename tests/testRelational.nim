@@ -36,13 +36,13 @@ test "groupby":
   check((grouped[k1]).len == 2)
   check(grouped[k2].len == 1)
 
-test "select":
+test "where":
   let rows = [
     (a: 1, b: 2),
     (a: 2, b: 4),
     (a: 3, b: 6)
   ]
-  let xs = rows.select(r=>(r.a mod 2 == 1))
+  let xs = rows.where(r=>(r.a mod 2 == 1))
   check (a: 1, b: 2) in xs
   check (a: 2, b: 4) notin xs
   check (a: 3, b: 6) in xs

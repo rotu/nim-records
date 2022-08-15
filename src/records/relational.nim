@@ -35,6 +35,6 @@ proc groupBy*(rows: openArray[tuple], keys: static openArray[string]): auto =
 
  return res
 
-proc select*[T](rows: openArray[T], predicate: T->bool): seq[T] =
+proc where*[T](rows: openArray[T], predicate: T->bool): seq[T] =
  ## get all rows for which the predicate is true
  filter(rows, predicate)

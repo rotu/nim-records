@@ -1,7 +1,7 @@
 import os
 
 # Package
-version = "0.5.0"
+version = "0.5.1"
 author = "Dan Rose"
 description = "Operations on tuples as heterogeneous record types a la Relational Algebra"
 license = "MIT"
