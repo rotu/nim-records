@@ -1,13 +1,13 @@
 import os
 
 # Package
-version = "0.5.0"
+version = "0.5.1"
 author = "Dan Rose"
 description = "Operations on tuples as heterogeneous record types a la Relational Algebra"
 license = "MIT"
 srcDir = "src"
 binDir = "build"
-requires "nim >= 1.6.6"
+requires "nim >= 1.6.0"
 
 task style, "enforce code style":
   var paths: seq[string]
@@ -23,3 +23,6 @@ task style, "enforce code style":
   echo ("prettying ", repr(paths))
   for path in paths:
     exec "nimpretty " & path
+
+task bdoc, "build docs":
+  exec "nim doc --project --outdir:build/doc src/records"
