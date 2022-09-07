@@ -7,7 +7,7 @@ description = "Operations on tuples as heterogeneous record types a la Relationa
 license = "MIT"
 srcDir = "src"
 binDir = "build"
-requires "nim >= 1.6.0"
+requires "nim >= 1.4.8"
 
 task style, "enforce code style":
   var paths: seq[string]

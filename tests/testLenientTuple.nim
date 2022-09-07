@@ -13,12 +13,14 @@ test "testAssignment":
     check x[0] != y[0]
 
     let yAsX = y.to(typeof x)
-    check (typeof yAsX) is (typeof x)
-    check yAsX[0] == x[0]
+    check:
+        ((typeof yAsX) is (typeof x))
+        yAsX[0] == x[0]
 
     let y2AsX = y.to(typeof x)
-    check (typeof y2AsX) is (typeof x)
-    check y2AsX[0] == x[0]
+    check:
+        ((typeof y2AsX) is (typeof x))
+        y2AsX[0] == x[0]
 
 test "assignfrom":
     var dest = (x: 1, y: 2)
