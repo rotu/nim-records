@@ -1,13 +1,13 @@
 import os
 
 # Package
-version = "0.5.1"
+version = "0.5.2"
 author = "Dan Rose"
 description = "Operations on tuples as heterogeneous record types a la Relational Algebra"
 license = "MIT"
 srcDir = "src"
 binDir = "build"
-requires "nim >= 1.6.0"
+requires "nim >= 1.4.8"
 
 task style, "enforce code style":
   var paths: seq[string]

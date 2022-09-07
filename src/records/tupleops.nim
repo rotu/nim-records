@@ -57,19 +57,20 @@ template tupleKeys*(t: tuple): TupleKeys =
   ## Return all the field names of the given tuple
   tupleKeys(typeof t)
 
-proc project*(t: tuple, keys: static openArray[string]): tuple =
+proc project*[T: tuple](t: T, keys: static openArray[string]): auto =
   ## Rearrange/select named fields from a named tuple,
   ## returning a new named tuple
 
-  macro projImpl(): tuple =
-    result = newNimNode(nnkTupleConstr)
+  macro projImpl(): untyped =
+    let res = newNimNode(nnkPar)
     when keys.len != 0:
       for key in @keys:
-        result.add(newColonExpr(
+        res.add(newColonExpr(
           ident key,
           newDotExpr(bindSym "t", ident key)
         ))
-  projImpl()
+    res
+  return projImpl()
 
 proc reject*(t: tuple, keys: static openArray[string]): tuple =
   ## Given a tuple and a set of keys, return key-value pairs whose keys

@@ -2,11 +2,11 @@ import std/[sequtils, sugar, tables, unittest]
 import records/[relational, lenientTuple]
 
 test "joinSequences":
-  var squares = collect:
+  var squares = collect(newSeq):
     for i in -3..3:
       (x: i, y: (i*i))
   check len(squares) == 7
-  let squares2 = collect:
+  let squares2 = collect(newSeq):
     for i in -3..3:
       (y: i*i, z: i)
   let foo = join(squares, squares2)
@@ -19,7 +19,7 @@ test "joinSequences":
     check rec["z"]*rec["z"] == rec["y"]
 
 test "project":
-  let table = collect:
+  let table = collect(newSeq):
     for i in -3..3:
       (x: i, y: (i*i))
   let xs = project(table, ["x"])
