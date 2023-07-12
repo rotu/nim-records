@@ -13,9 +13,6 @@ proc concat*(t1: tuple, t2: tuple): tuple =
       expectKind(arg.getTypeImpl(), {nnkTupleConstr, nnkTupleTy})
       for i, d in pairs(arg.getTypeImpl):
         case kind(d):
-          of nnkSym:
-            # un-named tuple field
-            result.add newTree(nnkBracketExpr, arg, newLit(i))
           of nnkIdentDefs:
             # named tuple field
             let prop = d[0]
@@ -23,7 +20,10 @@ proc concat*(t1: tuple, t2: tuple): tuple =
               newTree(nnkDotExpr, arg, prop)
             )
           else:
-            error("Unexpected field kind: `" & $kind(d) & "`")
+            # un-named tuple field
+            # usually d is of kind nnkSym
+            # but can be nnkBracketExpr, nnkTupleConstr, nnkRefTy
+            result.add newTree(nnkBracketExpr, arg, newLit(i))
   concatImpl()
 
 proc `&` *(t1: tuple, t2: tuple): auto = concat(t1, t2)
