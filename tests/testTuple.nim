@@ -45,6 +45,36 @@ test "concatenation":
   let c = concat( (1, 2), (3, "a"))
   check c == (1, 2, 3, "a")
 
+  check concat((),()) == ()
+  check concat((),(1,)) == (1,)
+  check concat((1,),()) == (1,)
+
+test "concatenateWithLists":
+    let a = ([1],[2,3])
+    let b = ([4],)
+    check a & b == ([1],[2,3],[4])
+
+    let d = (x:[1],y:[2,3])
+    let e = (z:[4],)
+    check d & e == (x:[1],y:[2,3],z:[4])
+
+test "concatenateWithTuples":
+  let a = ((),)
+  let b =  ((1,2,3),(4))
+  check a & b == ((),(1,2,3),(4))
+
+test "concatenateWithObjects":
+  type Foo = object
+    x:int
+  let a = Foo(x:1)
+  let b = Foo(x:2)
+  check concat((a,),(b,)) == (a,b)
+  check concat((a,),(b,)) != (b,a)
+
+  let ra = (ref Foo)(x:1)
+
+  check concat((ra,),(a,)) == (ra,a)
+
 test "join":
   let x = (a: 1, b: 2)
   check join(x, x) == some(x)
